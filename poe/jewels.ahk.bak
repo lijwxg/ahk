@@ -1,0 +1,90 @@
+#SingleInstance Force
+HotIfWinActive  "Path of Exile"
+
+SetMouseDelay 20
+SetWorkingDir A_ScriptDir
+SendMode "Input"
+
+
+ConfigINI := A_ScriptDir  "\Config.ini"
+
+; Read favorite modified from INI file
+jewels := A_ScriptDir  "\jewels.ini"
+if !FileExist(jewels)
+{
+	MsgBox "Please create jewels.ini and add modified under [modified]"
+	return 
+}
+modified := IniRead(jewels, "modified")
+
+!1::
+{
+	Loop 100
+	{
+		Sleep 500
+		; Optional: Clear the clipboard
+		Clipboard := ""
+		; Press Ctrl+C to copy
+		Send "{Ctrl down}c{Ctrl up}"
+		Sleep 300 ; Wait for the clipboard to update (adjust if needed)
+
+		; Read the clipboard
+		Clipboard := A_Clipboard
+		;MsgBox  Clipboard
+
+		; Loop through each modified from the INI file
+		; Loop through each modified from the INI file
+		len := 0
+		Loop parse, modified, "`n"
+		{
+			ModifiedToCheck := A_LoopField
+			IsFound :=  RegExMatch(Clipboard, ModifiedToCheck)
+			if (IsFound) {
+				len += 1
+			}
+		}
+		if (len == 2)
+		{
+			MsgBox "success"
+			Sleep 200
+			break
+		}
+		else
+		{
+			Sleep 100
+			BlockInput True
+			MouseGetPos &xx, &yy
+			rCordXX := xx
+			rCordYY := yy    
+			CordXX := IniRead(ConfigINI, "HorizonPos", "xx")
+			CordYY := IniRead(ConfigINI, "HorizonPos", "yy")
+			MouseMove CordXX , CordYY , 0
+			Sleep 250		
+			Click "Right"
+			MouseMove rCordXX , rCordYY , 0
+			Sleep 300
+			Click
+			BlockInput False		
+		}
+
+
+	}
+}
+
+
+
+
+
++F12::
+{
+	MouseGetPos &xx, &yy
+	IniWrite xx	, ConfigINI, "HorizonPos", "xx"
+	IniWrite yy	, ConfigINI, "HorizonPos", "yy"
+	return
+}
+
+
+!q::
+{
+	Reload
+}
